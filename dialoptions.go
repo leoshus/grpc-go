@@ -562,7 +562,7 @@ func withHealthCheckFunc(f internal.HealthChecker) DialOption {
 func defaultDialOptions() dialOptions {
 	return dialOptions{
 		disableRetry:    !envconfig.Retry,
-		healthCheckFunc: internal.HealthCheckFunc,
+		healthCheckFunc: internal.HealthCheckFunc,//健康检查
 		copts: transport.ConnectOptions{
 			WriteBufferSize: defaultWriteBufSize,
 			ReadBufferSize:  defaultReadBufSize,

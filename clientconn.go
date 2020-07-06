@@ -104,6 +104,7 @@ func Dial(target string, opts ...DialOption) (*ClientConn, error) {
 	return DialContext(context.Background(), target, opts...)
 }
 
+//创建client connection，建立链接默认非阻塞
 // DialContext creates a client connection to the given target. By default, it's
 // a non-blocking dial (the function won't wait for connections to be
 // established, and connecting happens in the background). To make it a blocking
@@ -125,7 +126,7 @@ func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *
 		target:            target,
 		csMgr:             &connectivityStateManager{},
 		conns:             make(map[*addrConn]struct{}),
-		dopts:             defaultDialOptions(),
+		dopts:             defaultDialOptions(), //默认连接参数
 		blockingpicker:    newPickerWrapper(),
 		czData:            new(channelzData),
 		firstResolveEvent: grpcsync.NewEvent(),
