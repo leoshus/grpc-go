@@ -96,6 +96,7 @@ func (b *baseBalancer) UpdateClientConnState(s balancer.ClientConnState) error {
 	}
 	// Successful resolution; clear resolver error and ensure we return nil.
 	b.resolverErr = nil
+	// 为resolver解析出来的地址 创建subConn
 	// addrsSet is the set converted from addrs, it's used for quick lookup of an address.
 	addrsSet := make(map[resolver.Address]struct{})
 	for _, a := range s.ResolverState.Addresses {
@@ -109,6 +110,7 @@ func (b *baseBalancer) UpdateClientConnState(s balancer.ClientConnState) error {
 			}
 			b.subConns[a] = sc
 			b.scStates[sc] = connectivity.Idle
+			//建立链接
 			sc.Connect()
 		}
 	}

@@ -146,7 +146,7 @@ func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *
 			cc.Close()
 		}
 	}()
-
+	//埋点监控逻辑
 	if channelz.IsOn() {
 		if cc.dopts.channelzParentID != 0 {
 			cc.channelzID = channelz.RegisterChannel(&channelzChannel{cc}, cc.dopts.channelzParentID, target)
@@ -301,6 +301,7 @@ func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *
 		Target:           cc.parsedTarget,
 	}
 
+	// 构建resolver balance
 	// Build the resolver.
 	rWrapper, err := newCCResolverWrapper(cc, resolverBuilder)
 	if err != nil {
@@ -629,6 +630,7 @@ func (cc *ClientConn) updateResolverState(s resolver.State, err error) error {
 					err = status.Errorf(codes.Unavailable, "illegal service config type: %T", s.ServiceConfig.Config)
 				}
 				cc.blockingpicker.updatePicker(base.NewErrPicker(err))
+				//通知链接状态变更
 				cc.csMgr.updateState(connectivity.TransientFailure)
 				cc.mu.Unlock()
 				return ret
@@ -655,6 +657,7 @@ func (cc *ClientConn) updateResolverState(s resolver.State, err error) error {
 			i++
 		}
 	}
+	//掉用balancerWrapper-> updateClientConnState
 	uccsErr := bw.updateClientConnState(&balancer.ClientConnState{ResolverState: s, BalancerConfig: balCfg})
 	if ret == nil {
 		ret = uccsErr // prefer ErrBadResolver state since any other error is
@@ -789,6 +792,7 @@ func (cc *ClientConn) incrCallsFailed() {
 	atomic.AddInt64(&cc.czData.callsFailed, 1)
 }
 
+// 建立链接传输通道
 // connect starts creating a transport.
 // It does nothing if the ac is not IDLE.
 // TODO(bar) Move this to the addrConn section.
@@ -807,6 +811,7 @@ func (ac *addrConn) connect() error {
 	ac.updateConnectivityState(connectivity.Connecting, nil)
 	ac.mu.Unlock()
 
+	// 异步建立链接
 	// Start a goroutine connecting to the server asynchronously.
 	go ac.resetTransport()
 	return nil

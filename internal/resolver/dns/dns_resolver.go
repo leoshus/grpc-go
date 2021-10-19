@@ -131,7 +131,7 @@ func (b *dnsBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts 
 		disableServiceConfig: opts.DisableServiceConfig,
 	}
 
-	if target.Authority == "" {
+	if target.Authority == "" {//默认resolver
 		d.resolver = defaultResolver
 	} else {
 		d.resolver, err = customAuthorityResolver(target.Authority)
@@ -141,6 +141,7 @@ func (b *dnsBuilder) Build(target resolver.Target, cc resolver.ClientConn, opts 
 	}
 
 	d.wg.Add(1)
+	//监听需要解析target的请求
 	go d.watcher()
 	d.ResolveNow(resolver.ResolveNowOptions{})
 	return d, nil
@@ -211,6 +212,7 @@ func (d *dnsResolver) watcher() {
 		if err != nil {
 			d.cc.ReportError(err)
 		} else {
+			//解析成功 通知ccResolverWrapper更新
 			d.cc.UpdateState(*state)
 		}
 
@@ -323,7 +325,9 @@ func (d *dnsResolver) lookupHost() ([]resolver.Address, error) {
 }
 
 func (d *dnsResolver) lookup() (*resolver.State, error) {
+	//解析DNS SRV信息
 	srv, srvErr := d.lookupSRV()
+	//SRV 解析Host信息
 	addrs, hostErr := d.lookupHost()
 	if hostErr != nil && (srvErr != nil || len(srv) == 0) {
 		return nil, hostErr
